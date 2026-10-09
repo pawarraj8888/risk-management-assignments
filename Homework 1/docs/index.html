@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Homework 1 - Treasury Yield Shocks, PV01 Hedges and VaR</title>
+<meta name="description" content="Two years of daily 2-year and 10-year Treasury yield changes: distribution, correlation, PV01-neutral hedges and a 99% 1-day VaR from historical simulation with second-order repricing. FRE-GY 6123, NYU Tandon.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e3a5f'/%3E%3Cpath d='M6 9 L14 22 L17 22 L26 8' fill='none' stroke='%232a78d6' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Crimson+Pro:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f8fafc; --card:#ffffff; --fg:#0f172a; --fg-2:#475569; --muted:#e9eef5; --border:#cbd5e1;
+  --primary:#1e3a5f; --accent:#b45309; --ring:#1e3a5f;
+  --chart-surface:#fcfcfb; --grid:#e1e0d9; --axis:#c3c2b7; --ink-muted:#898781; --s1:#2a78d6;
+  --serif:"Crimson Pro",Georgia,"Times New Roman",serif;
+  --sans:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#0d0d0d; --card:#1a1a19; --fg:#ffffff; --fg-2:#c3c2b7; --muted:#242423; --border:#383835;
+    --primary:#9ec5f4; --accent:#f0b26b; --ring:#9ec5f4;
+    --chart-surface:#1a1a19; --grid:#2c2c2a; --axis:#383835; --ink-muted:#898781; --s1:#3987e5;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none!important} }
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--primary);text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{color:var(--accent)}
+:focus-visible{outline:3px solid var(--ring);outline-offset:2px;border-radius:4px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--card);padding:8px 12px;border:1px solid var(--border);z-index:10}
+.skip:focus{left:16px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+header.site{border-bottom:1px solid var(--border);background:var(--card)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px 16px;padding:10px 0;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--primary)}
+nav.main{display:flex;gap:0 14px;flex-wrap:wrap;font-size:14.5px}
+nav.main a{display:inline-flex;align-items:center;min-height:44px;text-decoration:none;color:var(--fg-2);padding:0 2px}
+nav.main a:hover{color:var(--accent)}
+.hero{padding:clamp(28px,5vw,56px) 0 24px}
+.eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-2);font-weight:700}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(32px,5vw,52px);line-height:1.08;margin:10px 0 14px;color:var(--primary);letter-spacing:-.01em}
+.lede{font-size:19px;max-width:820px;margin:0 0 18px}
+.meta{display:flex;gap:8px 24px;flex-wrap:wrap;color:var(--fg-2);font-size:14.5px}
+.meta b{color:var(--fg);font-weight:700}
+section{padding:26px 0;scroll-margin-top:12px}
+h2{font-family:var(--serif);font-weight:600;font-size:30px;margin:0 0 6px;color:var(--primary)}
+.sub{color:var(--fg-2);margin:0 0 16px;max-width:820px}
+.prose{max-width:820px;margin:0 0 14px}
+ul.prose{padding-left:22px}
+ul.prose li{margin:0 0 8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:8px 0 6px}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.tile .k{font-size:13px;color:var(--fg-2);font-weight:700;letter-spacing:.02em}
+.tile .v{font-family:var(--serif);font-size:clamp(26px,2.4vw,34px);font-weight:600;line-height:1.1;margin:6px 0 2px;color:var(--fg)}
+.tile .d{font-size:13.5px;color:var(--fg-2)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
+caption{text-align:left;font-weight:700;color:var(--fg-2);padding:0 0 8px;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;font-weight:400}
+tbody th{text-align:left;white-space:normal;min-width:11em}
+thead th{color:var(--fg-2);font-weight:700;font-size:13px;letter-spacing:.02em;white-space:normal;vertical-align:bottom}
+thead th:first-child{text-align:left}
+tbody tr:hover{background:var(--muted)}
+.tscroll{overflow-x:auto;margin:0 0 18px;max-width:880px}
+.scroll{max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:8px;margin-top:10px}
+.scroll thead th{position:sticky;top:0;background:var(--card);z-index:1}
+.scroll caption{padding:10px 10px 8px}
+.chartcard{margin:0 0 18px;max-width:880px}
+.ctitle{font-weight:700;margin:0 0 8px}
+.vchart{display:block;width:100%;height:auto;background:var(--chart-surface);border-radius:8px;touch-action:pan-y}
+.c-narrow{display:none}
+@media (max-width:600px){.c-wide{display:none}.c-narrow{display:block}.chartcard{padding:14px 12px}}
+.vchart .grid{stroke:var(--grid);stroke-width:1}
+.vchart .axis{stroke:var(--axis);stroke-width:1}
+.vchart .tick{fill:var(--fg-2);font:12px var(--sans);font-variant-numeric:tabular-nums}
+.vchart .atitle{fill:var(--fg-2);font:700 12px var(--sans)}
+.vchart .curve{fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.vchart .leader{stroke:var(--ink-muted);stroke-width:1}
+.vchart .lbl{fill:var(--fg);font:700 13px var(--sans)}
+.vchart .lbl2{fill:var(--fg-2);font:13px var(--sans);font-variant-numeric:tabular-nums}
+.mk{fill:var(--fg);stroke:var(--chart-surface);stroke-width:2}
+.vchart .cross{stroke:var(--fg-2);stroke-width:1}
+.vchart .dot{fill:var(--s1);stroke:var(--chart-surface);stroke-width:2}
+.vchart .hit{fill:transparent;cursor:crosshair}
+.key{list-style:none;display:flex;gap:6px 22px;flex-wrap:wrap;padding:0;margin:12px 0 0;font-size:14px;color:var(--fg)}
+.key li{display:inline-flex;align-items:center;gap:8px}
+.key svg{width:14px;height:14px;flex:none}
+.probe{margin:14px 0 4px;padding:12px 14px;background:var(--muted);border-radius:8px}
+.probe label{display:block;font-size:13.5px;font-weight:700;color:var(--fg-2)}
+.probe input[type=range]{width:100%;min-height:44px;margin:0;accent-color:var(--primary);cursor:pointer}
+.readout{margin:0;font-size:15px;font-variant-numeric:tabular-nums}
+.readout b{font-size:17px}
+.readout span{color:var(--fg-2);margin-left:14px}
+details{margin-top:12px}
+summary{cursor:pointer;font-weight:700;color:var(--primary);min-height:44px;display:flex;align-items:center}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;background:var(--muted);padding:12px 14px;border-radius:8px;overflow-x:auto;white-space:nowrap;max-width:880px}
+.downloads{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;max-width:880px}
+.dl{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;text-decoration:none;color:var(--fg);transition:border-color .2s,transform .2s}
+.dl:hover{border-color:var(--primary);color:var(--fg);transform:translateY(-1px)}
+.dl .t{font-weight:700}
+.dl .d{font-size:13.5px;color:var(--fg-2)}
+.small{font-size:13.5px;color:var(--fg-2);max-width:820px}
+footer{border-top:1px solid var(--border);padding:26px 0 40px;color:var(--fg-2);font-size:14px;margin-top:20px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap top">
+    <div class="brand">Homework 1</div>
+    <nav class="main" aria-label="Sections">
+      <a href="#q1">Q1</a><a href="#q2">Q2</a><a href="#q3">Q3</a><a href="#q4">Q4</a><a href="#q5">Q5</a><a href="#q6">Q6</a><a href="#q7">Q7</a><a href="#q8">Q8</a>
+      <a href="#method">Method</a><a href="#downloads">Downloads</a><a href="https://github.com/pawarraj8888/risk-management-assignments/tree/main/Homework%201">GitHub</a><a href="../">All homework</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <div class="hero">
+    <div class="eyebrow">NYU Tandon · FRE-GY 6123 Financial Risk Management · Homework 1</div>
+    <h1>Treasury Yield Shocks, PV01 Hedges and VaR</h1>
+    <p class="lede">Two years of daily changes in the 2-year and 10-year Treasury yields: how far they are from normal, how the two
+      move together, how to hedge one note with the other, and what a 99% 1-day VaR looks like when every historical day is
+      replayed on today's position. Calculated in Excel, written up in Word.</p>
+    <div class="meta">
+      <span><b>Rajvardhan Pawar (rsp9234)</b></span>
+      <span>Data <b>1-Oct-24 to 30-Sep-26</b></span>
+      <span>Daily changes <b>521</b></span>
+      <span>VaR method <b>historical simulation</b></span>
+    </div>
+  </div>
+
+  <div class="tiles" role="group" aria-label="Key results">
+    <div class="tile"><div class="k">Correlation, 2-year and 10-year changes</div><div class="v">0.82</div><div class="d">0.95 on the 96 days when both moved more than 1 SD</div></div>
+    <div class="tile"><div class="k">2-year notes to sell against $20 million 10-year</div><div class="v">$78.6 million</div><div class="d">face amount, for zero net PV01</div></div>
+    <div class="tile"><div class="k">99% 1-day VaR, equal-PV01 portfolio</div><div class="v">$66,844</div><div class="d">$15 million 2-year + $3.82 million 10-year</div></div>
+    <div class="tile"><div class="k">Hedge with the lowest VaR</div><div class="v">A = -2.75</div><div class="d">zero total PV01 is at A = -3.82</div></div>
+  </div>
+
+<section id="q1">
+<h2>Question 1</h2>
+<p class="sub">For each shock series, what percent of the daily changes are within 1 standard deviation of the mean change, and within 2?</p>
+<div class="tscroll" tabindex="0" role="region" aria-label="Share of daily changes within 1 and 2 SD of the mean (table, scroll sideways if needed)"><table><caption>Share of daily changes within 1 and 2 SD of the mean</caption><thead><tr><th scope="col"><span class=sr>Row</span></th><th scope="col">Mean (bp)</th><th scope="col">SD (bp)</th><th scope="col">Days within 1 SD</th><th scope="col">% within 1 SD</th><th scope="col">Days within 2 SD</th><th scope="col">% within 2 SD</th></tr></thead><tbody><tr><th scope="row">2-year shocks</th><td>0.25</td><td>4.88</td><td>385 of 521</td><td>73.90%</td><td>496 of 521</td><td>95.20%</td></tr><tr><th scope="row">10-year shocks</th><td>0.30</td><td>4.85</td><td>379 of 521</td><td>72.74%</td><td>491 of 521</td><td>94.24%</td></tr><tr><th scope="row">Normal distribution</th><td></td><td></td><td></td><td>68.27%</td><td></td><td>95.45%</td></tr></tbody></table></div>
+<p class="prose"><strong>2-year: </strong>73.90% of the daily changes are within 1 SD of the mean and 95.20% are within 2 SD. <strong>10-year: </strong>72.74% are within 1 SD and 94.24% are within 2 SD.</p>
+<p class="prose">If the changes were normal I would expect 68.27% and 95.45%. Both series have more days close to the mean than a normal distribution and slightly fewer inside 2 SD, so they are more peaked in the middle with somewhat fatter tails. This is strongest for the 2-year: its excess kurtosis is 2.88 against 0.67 for the 10-year. Most days are quiet, and then there are a few very large moves (the biggest 2-year changes are -27.4 bp and +21.8 bp, both more than 4 SD). 5 of the 2-year changes are more than 3 SD from the mean, where a normal distribution would give about 1.4. This matters later because a VaR based on the normal distribution would understate the tail.</p>
+</section>
+<section id="q2">
+<h2>Question 2</h2>
+<p class="sub">The sample correlation of the two shock series over the complete two-year window.</p>
+<p class="prose">The sample correlation between the 2-year and 10-year daily changes over the full window is <strong>0.8204</strong> (521 days, Excel CORREL).</p>
+<p class="prose">The two yields move in the same direction most of the time, which is what I would expect since both react to the same news on rates and the economy. But the correlation is clearly below 1, so there is also a part of the 2-year move that is not shared with the 10-year (the curve steepening or flattening). That part is what makes the hedges in Questions 5 to 8 imperfect.</p>
+</section>
+<section id="q3">
+<h2>Question 3</h2>
+<p class="sub">The conditional expected values E[2-year shock | 10-year shock &gt;= 0] and E[10-year shock | 2-year shock &gt;= 0], and what they say about the correlation.</p>
+<div class="tscroll" tabindex="0" role="region" aria-label="Conditional means of the daily changes (table, scroll sideways if needed)"><table><caption>Conditional means of the daily changes</caption><thead><tr><th scope="col">Conditional expected value</th><th scope="col">Value (bp)</th><th scope="col">Days in the condition</th></tr></thead><tbody><tr><th scope="row">E[2-year shock | 10-year shock &gt;= 0]</th><td>2.94</td><td>286</td></tr><tr><th scope="row">E[10-year shock | 2-year shock &gt;= 0]</th><td>3.22</td><td>275</td></tr><tr><th scope="row">E[2-year shock | 10-year shock &lt; 0]  (for comparison)</th><td>-3.03</td><td>235</td></tr><tr><th scope="row">E[10-year shock | 2-year shock &lt; 0]  (for comparison)</th><td>-2.97</td><td>246</td></tr></tbody></table></div>
+<p class="prose">E[2-year shock | 10-year shock &gt;= 0] = <strong>2.94 bp</strong> and E[10-year shock | 2-year shock &gt;= 0] = <strong>3.22 bp</strong>.</p>
+<p class="prose">These numbers tell me about the correlation once I compare them with what I would get if the two shocks were unrelated. In that case, knowing that the 10-year went up would tell me nothing about the 2-year, and the conditional mean would just be the overall mean of 0.25 bp. Instead it is 2.94 bp, about 0.6 SD of a 2-year change, and it flips to -3.03 bp on the days when the 10-year fell. So the sign of one shock moves the expected value of the other by a lot, and in the same direction. That is positive correlation, and I can see it without computing the correlation coefficient.</p>
+<p class="prose">The size also lines up with Question 2. For joint normal shocks with mean close to zero, E[X | Y &gt;= 0] = correlation x SD(X) x sqrt(2/pi), which is about 0.80 x correlation x SD(X). With a correlation of 1 the 2-year number would be about 3.89 bp and with zero correlation it would be about 0. Backing out the correlation from my two numbers gives roughly 0.76 and 0.83, or about 0.73 and 0.79 if I first take out the small positive means. That is in the same range as the 0.82 from Question 2. The two are not identical because this measure only uses the sign of the conditioning shock and the data are not exactly normal. The conditional means also show that the relationship is about the same on up days and down days, which a single correlation number does not show.</p>
+</section>
+<section id="q4">
+<h2>Question 4</h2>
+<p class="sub">The correlation on the days when both changes are more than 1 standard deviation away from the mean, and how many such days there are.</p>
+<p class="prose">There are <strong>96 days</strong> on which both the 2-year and the 10-year change are more than 1 SD away from their mean. The sample correlation on those days is <strong>0.9459</strong>.</p>
+<p class="prose">For reference, the 2-year change is more than 1 SD from its mean on 136 days and the 10-year on 142 days, and 96 of those are the same days. The correlation goes up from 0.82 over the whole window to 0.95 on the big-move days. On all 96 days the two yields moved in the same direction (44 days both up, 52 days both down, 0 days opposite).</p>
+<p class="prose">I do not think this shows that the correlation is really higher on big days. Keeping only the days where both moves are large throws away the middle of the scatter plot and leaves two clusters, one in the up-up corner and one in the down-down corner, and two clusters like that give a correlation close to 1 almost automatically. As a check, for joint normal shocks with a constant correlation of 0.82 the same filter gives a correlation of about 0.96 and practically no days with opposite moves, which is what I see here (0.95 and zero days). So the jump from 0.82 to 0.95 is mostly a selection effect. What I take from it is that a correlation measured only on large-move days cannot be compared directly with the full-sample number.</p>
+</section>
+<section id="q5">
+<h2>Question 5</h2>
+<p class="sub">Long $20 million 10-year notes: how many 2-year notes to sell so that the combined position is PV01-neutral.</p>
+<p class="prose">I would sell about <strong>$78.62 million</strong> face of 2-year notes.</p>
+<p class="prose">The PV01 of the 10-year is 7.382 per 100 face, which is $738.2 per bp for each $1 million face, so the long $20 million position has a DV01 of 20 x 738.2 = $14,764 per bp. The 2-year has a PV01 of 1.878, or $187.8 per bp per $1 million. To cancel the 10-year exposure I need 14,764 / 187.8 = 78.62, so $78.62 million of 2-year notes sold short. That is a hedge ratio of 7.382 / 1.878 = 3.93 to 1, and the net PV01 of the combined position is zero. This only makes the position neutral to a move where both yields change by the same number of bp.</p>
+</section>
+<section id="q6">
+<h2>Question 6</h2>
+<p class="sub">Long $15 million 2-year notes plus the 10-year notes that carry the same PV01. Does each leg then carry the same amount of risk?</p>
+<p class="prose">The 2-year leg has a DV01 of 15 x 187.8 = $2,817 per bp, so the 10-year leg needs 2,817 / 738.2 = <strong>$3.816 million</strong> face. Total DV01 of the portfolio is $5,634 per bp.</p>
+<p class="prose"><strong>Does equal PV01 mean equal risk? No. </strong>PV01 only tells me how much each leg loses for a 1 bp rise in its own yield. Risk also depends on how many bp each yield actually moves in a day, on how fat the tails are, and on how the two yields move together. Matching PV01 would only match risk if the 2-year and 10-year yields had the same distribution of daily changes.</p>
+<div class="tscroll" tabindex="0" role="region" aria-label="The two legs compared, each on its own (table, scroll sideways if needed)"><table><caption>The two legs compared, each on its own</caption><thead><tr><th scope="col">Each leg on its own</th><th scope="col">2-year leg</th><th scope="col">10-year leg</th></tr></thead><tbody><tr><th scope="row">DV01 ($ per bp)</th><td>2,817</td><td>2,817</td></tr><tr><th scope="row">Daily SD of the yield change (bp)</th><td>4.88</td><td>4.85</td></tr><tr><th scope="row">Excess kurtosis of the yield change</th><td>2.88</td><td>0.67</td></tr><tr><th scope="row">Daily SD of P&amp;L ($)</th><td>13,747</td><td>13,667</td></tr><tr><th scope="row">Stand-alone 99% 1-day VaR ($)</th><td>34,654</td><td>34,116</td></tr><tr><th scope="row">Worst 1-day loss in the window ($)</th><td>61,251</td><td>52,770</td></tr><tr><th scope="row">Share of portfolio P&amp;L variance</th><td>50.2%</td><td>49.8%</td></tr></tbody></table></div>
+<p class="prose">In this sample the two legs do come out close: the daily SDs of the two yields are almost the same (4.88 bp and 4.85 bp), so the P&amp;L volatility, the stand-alone VaR and the variance shares are all roughly 50/50. But that is a result of this particular two-year window, not something that equal PV01 guarantees. In a period where the 2-year is more volatile than the 10-year (or the other way round) the same PV01 would carry different risk. Even here the legs are not identical in the tail: the 2-year shocks have much fatter tails, and the worst day costs $61,251 on the 2-year leg against $52,770 on the 10-year leg. The legs also sit on different parts of the curve, so they respond differently to a steepening or a flattening, and the 10-year has more convexity per unit of PV01.</p>
+</section>
+<section id="q7">
+<h2>Question 7</h2>
+<p class="sub">The 99% 1-day VaR of the Question 6 portfolio, using the second-order price/yield repricing formula.</p>
+<p class="prose">For $15 million 2-year notes plus $3.816 million 10-year notes, the 99% 1-day VaR is about <strong>$66,844</strong>.</p>
+<p class="prose">This is the historical simulation described at the top: 521 scenarios, each leg repriced with the second-order formula, and VaR read off as minus the 1st percentile of the daily P&amp;L. A few numbers around it:</p>
+<ul class="prose"><li>The 5th and 6th worst days lose $68,374 and $67,342, so using one of those as the VaR instead would raise the answer by about 2% at most. The worst day in the window is 04-Oct-24 with a loss of $95,143, when the 2-year rose 21.8 bp and the 10-year 12.1 bp.</li><li>VaR divided by the total DV01 is 11.9 bp, so the VaR is about the loss from a parallel rise of 12 bp in both yields.</li><li>A normal approximation (2.3263 x the daily P&amp;L SD of $26,156, with the mean set to zero) gives $60,847, which is lower than the historical number. That fits the fat tails from Question 1.</li><li>With only the first-order PV01 term the VaR would be $67,101. The convexity term lowers it by about $257, which is small because one-day yield moves are small.</li><li>The two stand-alone VaRs add up to $68,770, so putting the legs together saves only about $1,926. Both legs are long and the two yields are highly correlated (0.82), so there is little diversification.</li></ul>
+</section>
+<section id="q8">
+<h2>Question 8</h2>
+<p class="sub">The 99% 1-day VaR of P(A) = $15 million 2-year notes + A million 10-year notes as a function of A. Is the lowest VaR at zero total PV01?</p>
+
+<figure class="card chartcard">
+  <figcaption class="ctitle">99% 1-day VaR of P(A): $15 million 2-year notes + A million 10-year notes</figcaption>
+  <svg class="vchart c-wide" viewBox="0 0 760 420" role="img" aria-labelledby="c-wide-t c-wide-d" data-ml="70" data-pw="672" data-mt="40" data-ph="328" data-ymax="140000"><title id="c-wide-t">99% 1-day VaR of P(A) as a function of A</title><desc id="c-wide-d">A V-shaped curve. VaR falls from $59,841 at A = -10 to a low of $19,533 at A = -2.75, is $20,106 at the zero-PV01 point A = -3.82, is $34,654 at A = 0 and rises to $124,835 at A = 10.</desc><line class="axis" x1="70" x2="742" y1="368.0" y2="368.0"/><text class="tick" x="62" y="372.0" text-anchor="end">0</text><line class="grid" x1="70" x2="742" y1="321.1" y2="321.1"/><text class="tick" x="62" y="325.1" text-anchor="end">20,000</text><line class="grid" x1="70" x2="742" y1="274.3" y2="274.3"/><text class="tick" x="62" y="278.3" text-anchor="end">40,000</text><line class="grid" x1="70" x2="742" y1="227.4" y2="227.4"/><text class="tick" x="62" y="231.4" text-anchor="end">60,000</text><line class="grid" x1="70" x2="742" y1="180.6" y2="180.6"/><text class="tick" x="62" y="184.6" text-anchor="end">80,000</text><line class="grid" x1="70" x2="742" y1="133.7" y2="133.7"/><text class="tick" x="62" y="137.7" text-anchor="end">100,000</text><line class="grid" x1="70" x2="742" y1="86.9" y2="86.9"/><text class="tick" x="62" y="90.9" text-anchor="end">120,000</text><line class="grid" x1="70" x2="742" y1="40.0" y2="40.0"/><text class="tick" x="62" y="44.0" text-anchor="end">140,000</text><line class="axis" x1="70.0" x2="70.0" y1="368.0" y2="373.0"/><text class="tick" x="70.0" y="388.0" text-anchor="middle">-10</text><line class="axis" x1="137.2" x2="137.2" y1="368.0" y2="373.0"/><text class="tick" x="137.2" y="388.0" text-anchor="middle">-8</text><line class="axis" x1="204.4" x2="204.4" y1="368.0" y2="373.0"/><text class="tick" x="204.4" y="388.0" text-anchor="middle">-6</text><line class="axis" x1="271.6" x2="271.6" y1="368.0" y2="373.0"/><text class="tick" x="271.6" y="388.0" text-anchor="middle">-4</text><line class="axis" x1="338.8" x2="338.8" y1="368.0" y2="373.0"/><text class="tick" x="338.8" y="388.0" text-anchor="middle">-2</text><line class="axis" x1="406.0" x2="406.0" y1="368.0" y2="373.0"/><text class="tick" x="406.0" y="388.0" text-anchor="middle">0</text><line class="axis" x1="473.2" x2="473.2" y1="368.0" y2="373.0"/><text class="tick" x="473.2" y="388.0" text-anchor="middle">2</text><line class="axis" x1="540.4" x2="540.4" y1="368.0" y2="373.0"/><text class="tick" x="540.4" y="388.0" text-anchor="middle">4</text><line class="axis" x1="607.6" x2="607.6" y1="368.0" y2="373.0"/><text class="tick" x="607.6" y="388.0" text-anchor="middle">6</text><line class="axis" x1="674.8" x2="674.8" y1="368.0" y2="373.0"/><text class="tick" x="674.8" y="388.0" text-anchor="middle">8</text><line class="axis" x1="742.0" x2="742.0" y1="368.0" y2="373.0"/><text class="tick" x="742.0" y="388.0" text-anchor="middle">10</text><text class="atitle" x="70" y="28">99% 1-day VaR ($)</text><text class="atitle" x="406.0" y="412" text-anchor="middle">A = 10-year notes, $ million face (negative = short)</text><path class="curve" d="M70.0,227.8 L78.4,232.4 L86.8,237.0 L95.2,241.6 L103.6,246.3 L112.0,250.9 L120.4,255.5 L128.8,260.1 L137.2,264.7 L145.6,269.3 L154.0,273.8 L162.4,278.3 L170.8,283.3 L179.2,287.9 L187.6,292.2 L196.0,296.0 L204.4,300.2 L212.8,304.4 L221.2,308.6 L229.6,311.1 L238.0,314.7 L246.4,317.3 L254.8,318.5 L263.2,318.3 L271.6,319.9 L280.0,321.0 L288.4,320.4 L296.8,321.0 L305.2,321.7 L313.6,322.2 L322.0,321.7 L330.4,319.1 L338.8,316.0 L347.2,312.8 L355.6,309.6 L364.0,305.9 L372.4,301.6 L380.8,298.3 L389.2,294.6 L397.6,290.7 L406.0,286.8 L414.4,282.9 L422.8,278.6 L431.2,274.8 L439.6,271.0 L448.0,266.8 L456.4,262.0 L464.8,256.8 L473.2,251.3 L481.6,245.8 L490.0,240.3 L498.4,234.8 L506.8,228.9 L515.2,223.7 L523.6,218.3 L532.0,212.8 L540.4,207.4 L548.8,201.9 L557.2,196.4 L565.6,190.9 L574.0,185.4 L582.4,179.9 L590.8,174.4 L599.2,168.9 L607.6,163.4 L616.0,157.9 L624.4,152.4 L632.8,146.9 L641.2,141.4 L649.6,135.9 L658.0,130.5 L666.4,125.0 L674.8,119.5 L683.2,114.0 L691.6,108.5 L700.0,103.0 L708.4,97.5 L716.8,92.0 L725.2,86.5 L733.6,81.0 L742.0,75.5"/><line class="leader" x1="235.3" y1="174.5" x2="273.8" y2="312.9"/><text class="lbl" x="231.3" y="152.5" text-anchor="end">Zero total PV01</text><text class="lbl2" x="231.3" y="168.5" text-anchor="end">A = -3.82, $20,106</text><line class="leader" x1="355.0" y1="174.5" x2="317.6" y2="314.2"/><text class="lbl" x="359.0" y="152.5">Lowest VaR</text><text class="lbl2" x="359.0" y="168.5">A = -2.75, $19,533</text><line class="cross" x1="313.6" x2="313.6" y1="40" y2="368.0"/><circle class="dot" cx="313.6" cy="322.2" r="5"/><rect class="mk" x="273.3" y="316.4" width="9" height="9" transform="rotate(45 277.8 320.9)"/><circle class="mk" cx="313.6" cy="322.2" r="5"/><rect class="hit" x="70" y="40" width="672" height="328"/></svg>
+  <svg class="vchart c-narrow" viewBox="0 0 340 310" role="img" aria-labelledby="c-narrow-t c-narrow-d" data-ml="38" data-pw="292" data-mt="34" data-ph="226" data-ymax="140000"><title id="c-narrow-t">99% 1-day VaR of P(A) as a function of A</title><desc id="c-narrow-d">A V-shaped curve. VaR falls from $59,841 at A = -10 to a low of $19,533 at A = -2.75, is $20,106 at the zero-PV01 point A = -3.82, is $34,654 at A = 0 and rises to $124,835 at A = 10.</desc><line class="axis" x1="38" x2="330" y1="260.0" y2="260.0"/><text class="tick" x="30" y="264.0" text-anchor="end">0</text><line class="grid" x1="38" x2="330" y1="227.7" y2="227.7"/><text class="tick" x="30" y="231.7" text-anchor="end">20k</text><line class="grid" x1="38" x2="330" y1="195.4" y2="195.4"/><text class="tick" x="30" y="199.4" text-anchor="end">40k</text><line class="grid" x1="38" x2="330" y1="163.1" y2="163.1"/><text class="tick" x="30" y="167.1" text-anchor="end">60k</text><line class="grid" x1="38" x2="330" y1="130.9" y2="130.9"/><text class="tick" x="30" y="134.9" text-anchor="end">80k</text><line class="grid" x1="38" x2="330" y1="98.6" y2="98.6"/><text class="tick" x="30" y="102.6" text-anchor="end">100k</text><line class="grid" x1="38" x2="330" y1="66.3" y2="66.3"/><text class="tick" x="30" y="70.3" text-anchor="end">120k</text><line class="grid" x1="38" x2="330" y1="34.0" y2="34.0"/><text class="tick" x="30" y="38.0" text-anchor="end">140k</text><line class="axis" x1="38.0" x2="38.0" y1="260.0" y2="265.0"/><text class="tick" x="38.0" y="280.0" text-anchor="middle">-10</text><line class="axis" x1="111.0" x2="111.0" y1="260.0" y2="265.0"/><text class="tick" x="111.0" y="280.0" text-anchor="middle">-5</text><line class="axis" x1="184.0" x2="184.0" y1="260.0" y2="265.0"/><text class="tick" x="184.0" y="280.0" text-anchor="middle">0</text><line class="axis" x1="257.0" x2="257.0" y1="260.0" y2="265.0"/><text class="tick" x="257.0" y="280.0" text-anchor="middle">5</text><line class="axis" x1="330.0" x2="330.0" y1="260.0" y2="265.0"/><text class="tick" x="330.0" y="280.0" text-anchor="middle">10</text><text class="atitle" x="38" y="22">99% 1-day VaR ($)</text><text class="atitle" x="184.0" y="302" text-anchor="middle">A, $ million of 10-year notes (negative = short)</text><path class="curve" d="M38.0,163.4 L41.6,166.6 L45.3,169.8 L49.0,172.9 L52.6,176.1 L56.2,179.3 L59.9,182.5 L63.5,185.7 L67.2,188.8 L70.8,192.0 L74.5,195.1 L78.2,198.2 L81.8,201.7 L85.5,204.8 L89.1,207.8 L92.8,210.4 L96.4,213.3 L100.0,216.2 L103.7,219.1 L107.3,220.8 L111.0,223.3 L114.7,225.1 L118.3,225.9 L121.9,225.7 L125.6,226.8 L129.2,227.6 L132.9,227.2 L136.6,227.6 L140.2,228.1 L143.8,228.5 L147.5,228.1 L151.2,226.3 L154.8,224.2 L158.4,222.0 L162.1,219.7 L165.8,217.2 L169.4,214.3 L173.1,212.0 L176.7,209.4 L180.3,206.7 L184.0,204.1 L187.6,201.4 L191.3,198.4 L194.9,195.8 L198.6,193.2 L202.2,190.3 L205.9,186.9 L209.6,183.4 L213.2,179.6 L216.9,175.8 L220.5,172.0 L224.1,168.2 L227.8,164.2 L231.4,160.6 L235.1,156.9 L238.8,153.1 L242.4,149.3 L246.1,145.5 L249.7,141.7 L253.4,138.0 L257.0,134.2 L260.6,130.4 L264.3,126.6 L267.9,122.8 L271.6,119.0 L275.2,115.2 L278.9,111.5 L282.6,107.7 L286.2,103.9 L289.9,100.1 L293.5,96.3 L297.1,92.5 L300.8,88.8 L304.4,85.0 L308.1,81.2 L311.8,77.4 L315.4,73.6 L319.1,69.8 L322.7,66.0 L326.4,62.3 L330.0,58.5"/><line class="cross" x1="143.8" x2="143.8" y1="34" y2="260.0"/><circle class="dot" cx="143.8" cy="228.5" r="5"/><rect class="mk" x="123.8" y="223.0" width="9" height="9" transform="rotate(45 128.3 227.5)"/><circle class="mk" cx="143.8" cy="228.5" r="5"/><rect class="hit" x="38" y="34" width="292" height="226"/></svg>
+  <ul class="key">
+    <li><svg viewBox="0 0 14 14" aria-hidden="true"><circle class="mk" cx="7" cy="7" r="5"/></svg> Lowest VaR: A = -2.75, $19,533</li>
+    <li><svg viewBox="0 0 14 14" aria-hidden="true"><rect class="mk" x="2.5" y="2.5" width="9" height="9" transform="rotate(45 7 7)"/></svg> Zero total PV01: A = -3.82, $20,106</li>
+  </ul>
+  <div class="probe">
+    <label for="a-slider">Read a point on the curve: A, $ million face of 10-year notes</label>
+    <input id="a-slider" type="range" min="-10" max="10" step="0.25" value="-2.75">
+    <p class="readout" aria-live="polite">A = <b id="r-a">-2.75</b> <span>99% 1-day VaR</span> <b id="r-v">$19,533</b> <span>net DV01</span> <b id="r-d">$787</b> <span>per bp</span></p>
+  </div>
+  <details>
+    <summary>Show the numbers behind the chart</summary>
+    <div class="scroll" tabindex="0" role="region" aria-label="VaR for each value of A (table)">
+      <table><caption>All 81 points, as calculated on the Q8 VaR Graph sheet</caption>
+      <thead><tr><th scope="col">A ($ million)</th><th scope="col">99% 1-day VaR ($)</th><th scope="col">Net DV01 ($ per bp)</th></tr></thead>
+      <tbody><tr><th scope="row">-10.00</th><td>59,841</td><td>-4,565</td></tr><tr><th scope="row">-9.75</th><td>57,871</td><td>-4,380</td></tr><tr><th scope="row">-9.50</th><td>55,902</td><td>-4,196</td></tr><tr><th scope="row">-9.25</th><td>53,932</td><td>-4,011</td></tr><tr><th scope="row">-9.00</th><td>51,962</td><td>-3,827</td></tr><tr><th scope="row">-8.75</th><td>49,993</td><td>-3,642</td></tr><tr><th scope="row">-8.50</th><td>48,023</td><td>-3,458</td></tr><tr><th scope="row">-8.25</th><td>46,053</td><td>-3,273</td></tr><tr><th scope="row">-8.00</th><td>44,084</td><td>-3,089</td></tr><tr><th scope="row">-7.75</th><td>42,128</td><td>-2,904</td></tr><tr><th scope="row">-7.50</th><td>40,218</td><td>-2,720</td></tr><tr><th scope="row">-7.25</th><td>38,308</td><td>-2,535</td></tr><tr><th scope="row">-7.00</th><td>36,140</td><td>-2,350</td></tr><tr><th scope="row">-6.75</th><td>34,204</td><td>-2,166</td></tr><tr><th scope="row">-6.50</th><td>32,336</td><td>-1,981</td></tr><tr><th scope="row">-6.25</th><td>30,750</td><td>-1,797</td></tr><tr><th scope="row">-6.00</th><td>28,952</td><td>-1,612</td></tr><tr><th scope="row">-5.75</th><td>27,154</td><td>-1,428</td></tr><tr><th scope="row">-5.50</th><td>25,362</td><td>-1,243</td></tr><tr><th scope="row">-5.25</th><td>24,272</td><td>-1,059</td></tr><tr><th scope="row">-5.00</th><td>22,750</td><td>-874</td></tr><tr><th scope="row">-4.75</th><td>21,620</td><td>-689</td></tr><tr><th scope="row">-4.50</th><td>21,125</td><td>-505</td></tr><tr><th scope="row">-4.25</th><td>21,232</td><td>-320</td></tr><tr><th scope="row">-4.00</th><td>20,549</td><td>-136</td></tr><tr><th scope="row">-3.75</th><td>20,074</td><td>49</td></tr><tr><th scope="row">-3.50</th><td>20,303</td><td>233</td></tr><tr><th scope="row">-3.25</th><td>20,064</td><td>418</td></tr><tr><th scope="row">-3.00</th><td>19,773</td><td>602</td></tr><tr><th scope="row">-2.75</th><td>19,533</td><td>787</td></tr><tr><th scope="row">-2.50</th><td>19,751</td><td>971</td></tr><tr><th scope="row">-2.25</th><td>20,872</td><td>1,156</td></tr><tr><th scope="row">-2.00</th><td>22,194</td><td>1,341</td></tr><tr><th scope="row">-1.75</th><td>23,555</td><td>1,525</td></tr><tr><th scope="row">-1.50</th><td>24,945</td><td>1,710</td></tr><tr><th scope="row">-1.25</th><td>26,526</td><td>1,894</td></tr><tr><th scope="row">-1.00</th><td>28,325</td><td>2,079</td></tr><tr><th scope="row">-0.75</th><td>29,760</td><td>2,263</td></tr><tr><th scope="row">-0.50</th><td>31,324</td><td>2,448</td></tr><tr><th scope="row">-0.25</th><td>32,989</td><td>2,632</td></tr><tr><th scope="row">0.00</th><td>34,654</td><td>2,817</td></tr><tr><th scope="row">0.25</th><td>36,319</td><td>3,002</td></tr><tr><th scope="row">0.50</th><td>38,178</td><td>3,186</td></tr><tr><th scope="row">0.75</th><td>39,783</td><td>3,371</td></tr><tr><th scope="row">1.00</th><td>41,411</td><td>3,555</td></tr><tr><th scope="row">1.25</th><td>43,179</td><td>3,740</td></tr><tr><th scope="row">1.50</th><td>45,254</td><td>3,924</td></tr><tr><th scope="row">1.75</th><td>47,469</td><td>4,109</td></tr><tr><th scope="row">2.00</th><td>49,814</td><td>4,293</td></tr><tr><th scope="row">2.25</th><td>52,158</td><td>4,478</td></tr><tr><th scope="row">2.50</th><td>54,503</td><td>4,662</td></tr><tr><th scope="row">2.75</th><td>56,852</td><td>4,847</td></tr><tr><th scope="row">3.00</th><td>59,360</td><td>5,032</td></tr><tr><th scope="row">3.25</th><td>61,586</td><td>5,216</td></tr><tr><th scope="row">3.50</th><td>63,880</td><td>5,401</td></tr><tr><th scope="row">3.75</th><td>66,225</td><td>5,585</td></tr><tr><th scope="row">4.00</th><td>68,569</td><td>5,770</td></tr><tr><th scope="row">4.25</th><td>70,914</td><td>5,954</td></tr><tr><th scope="row">4.50</th><td>73,258</td><td>6,139</td></tr><tr><th scope="row">4.75</th><td>75,602</td><td>6,323</td></tr><tr><th scope="row">5.00</th><td>77,947</td><td>6,508</td></tr><tr><th scope="row">5.25</th><td>80,291</td><td>6,693</td></tr><tr><th scope="row">5.50</th><td>82,636</td><td>6,877</td></tr><tr><th scope="row">5.75</th><td>84,980</td><td>7,062</td></tr><tr><th scope="row">6.00</th><td>87,324</td><td>7,246</td></tr><tr><th scope="row">6.25</th><td>89,669</td><td>7,431</td></tr><tr><th scope="row">6.50</th><td>92,013</td><td>7,615</td></tr><tr><th scope="row">6.75</th><td>94,358</td><td>7,800</td></tr><tr><th scope="row">7.00</th><td>96,702</td><td>7,984</td></tr><tr><th scope="row">7.25</th><td>99,047</td><td>8,169</td></tr><tr><th scope="row">7.50</th><td>101,391</td><td>8,354</td></tr><tr><th scope="row">7.75</th><td>103,735</td><td>8,538</td></tr><tr><th scope="row">8.00</th><td>106,080</td><td>8,723</td></tr><tr><th scope="row">8.25</th><td>108,424</td><td>8,907</td></tr><tr><th scope="row">8.50</th><td>110,769</td><td>9,092</td></tr><tr><th scope="row">8.75</th><td>113,113</td><td>9,276</td></tr><tr><th scope="row">9.00</th><td>115,457</td><td>9,461</td></tr><tr><th scope="row">9.25</th><td>117,802</td><td>9,645</td></tr><tr><th scope="row">9.50</th><td>120,146</td><td>9,830</td></tr><tr><th scope="row">9.75</th><td>122,491</td><td>10,014</td></tr><tr><th scope="row">10.00</th><td>124,835</td><td>10,199</td></tr></tbody></table>
+    </div>
+  </details>
+</figure>
+<script type="application/json" id="var-data">{"a": [-10, -9.75, -9.5, -9.25, -9, -8.75, -8.5, -8.25, -8, -7.75, -7.5, -7.25, -7, -6.75, -6.5, -6.25, -6, -5.75, -5.5, -5.25, -5, -4.75, -4.5, -4.25, -4, -3.75, -3.5, -3.25, -3, -2.75, -2.5, -2.25, -2, -1.75, -1.5, -1.25, -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10], "v": [59841.0, 57871.34, 55901.68, 53932.01, 51962.35, 49992.68, 48023.02, 46053.35, 44083.69, 42127.68, 40217.64, 38307.6, 36140.13, 34204.28, 32335.82, 30750.44, 28952.17, 27153.9, 25362.36, 24272.15, 22750.44, 21619.62, 21125.46, 21231.71, 20548.73, 20073.72, 20303.3, 20064.48, 19772.67, 19532.98, 19751.07, 20871.51, 22194.24, 23555.12, 24945.48, 26526.17, 28324.88, 29760.19, 31324.46, 32989.4, 34654.33, 36319.27, 38177.86, 39783.04, 41410.99, 43178.9, 45254.27, 47469.5, 49813.91, 52158.32, 54502.73, 56852.1, 59360.47, 61585.57, 63880.37, 66224.78, 68569.19, 70913.6, 73258.01, 75602.42, 77946.83, 80291.24, 82635.65, 84980.06, 87324.48, 89668.89, 92013.3, 94357.71, 96702.12, 99046.53, 101390.94, 103735.35, 106079.76, 108424.17, 110768.58, 113112.99, 115457.4, 117801.81, 120146.22, 122490.63, 124835.04], "d": [-4565.0, -4380.45, -4195.9, -4011.35, -3826.8, -3642.25, -3457.7, -3273.15, -3088.6, -2904.05, -2719.5, -2534.95, -2350.4, -2165.85, -1981.3, -1796.75, -1612.2, -1427.65, -1243.1, -1058.55, -874.0, -689.45, -504.9, -320.35, -135.8, 48.75, 233.3, 417.85, 602.4, 786.95, 971.5, 1156.05, 1340.6, 1525.15, 1709.7, 1894.25, 2078.8, 2263.35, 2447.9, 2632.45, 2817.0, 3001.55, 3186.1, 3370.65, 3555.2, 3739.75, 3924.3, 4108.85, 4293.4, 4477.95, 4662.5, 4847.05, 5031.6, 5216.15, 5400.7, 5585.25, 5769.8, 5954.35, 6138.9, 6323.45, 6508.0, 6692.55, 6877.1, 7061.65, 7246.2, 7430.75, 7615.3, 7799.85, 7984.4, 8168.95, 8353.5, 8538.05, 8722.6, 8907.15, 9091.7, 9276.25, 9460.8, 9645.35, 9829.9, 10014.45, 10199], "i": 29}</script>
+<div class="tscroll" tabindex="0" role="region" aria-label="Key points on the VaR curve (table, scroll sideways if needed)"><table><caption>Key points on the VaR curve</caption><thead><tr><th scope="col">Point on the curve</th><th scope="col">A ($ million face)</th><th scope="col">99% 1-day VaR ($)</th></tr></thead><tbody><tr><th scope="row">Lowest VaR on the grid</th><td>-2.75</td><td>19,533</td></tr><tr><th scope="row">Zero total PV01</th><td>-3.816</td><td>20,106</td></tr><tr><th scope="row">Minimum-variance hedge (beta x zero-PV01 amount)</th><td>-3.148</td><td>19,945</td></tr><tr><th scope="row">No 10-year position (A = 0)</th><td>0.00</td><td>34,654</td></tr></tbody></table></div>
+<p class="prose"><strong>No, the lowest VaR is not at the zero-PV01 point. </strong>The total PV01 is zero at A = -3.816 (short $3.816 million of 10-year notes), where the VaR is $20,106. The lowest VaR on my grid is at A = -2.75, where it is $19,533. So the best hedge uses fewer 10-year notes than the PV01-neutral hedge.</p>
+<p class="prose">The reason is that zero PV01 only protects against a parallel shift, where both yields move by the same number of bp. In the data they do not move one for one. The regression beta of the 2-year change on the 10-year change is 0.825 (the correlation of 0.82 times the ratio of the SDs, which is close to 1), so on average the 2-year moves a little over 0.8 bp when the 10-year moves 1 bp. Shorting the full PV01-neutral amount over-hedges. The variance-minimising hedge is 0.825 x 3.816 = $3.15 million short, and the VaR-minimising point is in the same area. It is not exactly the same number because VaR is a tail percentile and not a variance, so it depends on what happened on the handful of worst days.</p>
+<p class="prose">Two more things I notice in the graph. First, the curve is quite flat between about A = -4 and A = -2.5 (VaR stays around $20,000), so the exact location of the minimum is not very precise and the zero-PV01 hedge costs only about $573 of extra VaR. Second, the VaR never gets close to zero. Even at the best A it is 56% of the unhedged VaR of $34,654. With a correlation of 0.82, the part of the 2-year move that is unrelated to the 10-year is sqrt(1 - 0.82^2) = 57% of its SD, and no amount of 10-year notes can hedge that curve risk. To the right of the minimum the VaR rises steadily: first the short 10-year hedge is being taken off, and past A = 0 the long 10-year notes add to the same exposure to rates going up.</p>
+</section>
+<section id="method">
+<h2>Assumptions and VaR calculation method</h2>
+<ul class="prose"><li>Data: 522 daily yields for the 2-year and 10-year Treasury from 1-Oct-24 to 30-Sep-26, which gives 521 daily changes (the &quot;shocks&quot;) in bp. I use every day in the window, including the days where a yield did not change.</li><li>Mean and standard deviation are sample statistics over the full window (STDEV.S, so n-1). &quot;Within k SD&quot; means the distance from the mean is at most k times the SD.</li><li>PV01 (-dP/dY) is the Bloomberg risk number and d2P/dY2 is the value in the spreadsheet (Bloomberg convexity x full price / 100): 1.878 and 0.0449 for the 2-year, 7.382 and 0.6908 for the 10-year, all per 100 face. I keep them fixed. Position sizes are face amounts.</li><li>Repricing uses the second-order formula from the spreadsheet, as a % of par: price change = -PV01 x (yield change in bp)/100 + 0.5 x d2P/dY2 x (yield change in bp)^2/10000. I treat PV01 as a positive number, so a long position loses when its yield goes up. Dollar P&amp;L = face x price change / 100.</li><li>VaR method: historical simulation. I take each of the 521 historical pairs of 2-year and 10-year changes, apply it to today&#x27;s position as an absolute move in bp, reprice both legs with the formula above and add them up. This keeps the actual co-movement of the two yields and does not assume the changes are normal.</li><li>The 99% 1-day VaR is minus the 1st percentile of the 521 simulated P&amp;Ls (Excel PERCENTILE.INC, which interpolates between the 6th and 7th worst days). I report it as a positive dollar loss.</li><li>Horizon is one day, every historical day has the same weight, and I ignore carry, roll-down and financing.</li></ul>
+<p class="small">All calculations are in the Excel file (sheets Summary, Q1-Q4 Stats, Q5-Q7 VaR and Q8 VaR Graph).</p>
+<p class="formula">price change (% of par) = -PV01 x (yield change in bp) / 100 + 0.5 x d2P/dY2 x (yield change in bp)^2 / 10000</p>
+</section>
+
+  <section id="downloads">
+    <h2>Downloads</h2>
+    <p class="sub">The two files as submitted. The workbook keeps the original data sheet and adds four sheets of working formulas.</p>
+    <div class="downloads">
+      <a class="dl" href="files/rsp9234_rajvardhan_pawar_HW1.xlsx" download><span class="t">Excel workbook</span><span class="d">rsp9234_rajvardhan_pawar_HW1.xlsx (1.1 MB). Sheets: Summary, Q1-Q4 Stats, Q5-Q7 VaR, Q8 VaR Graph.</span></a>
+      <a class="dl" href="files/rsp9234_rajvardhan_pawar_HW1.docx" download><span class="t">Written answers</span><span class="d">rsp9234_rajvardhan_pawar_HW1.docx (125 KB). All eight questions with the reasoning.</span></a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Rajvardhan Pawar · FRE-GY 6123 Financial Risk Management, NYU Tandon, Fall 2026 · <a href="https://github.com/pawarraj8888/risk-management-assignments">github.com/pawarraj8888/risk-management-assignments</a></div>
+</footer>
+<script>
+(function(){
+  var el = document.getElementById('var-data'); if(!el) return;
+  var D = JSON.parse(el.textContent), slider = document.getElementById('a-slider');
+  var ra = document.getElementById('r-a'), rv = document.getElementById('r-v'), rd = document.getElementById('r-d');
+  var charts = Array.prototype.slice.call(document.querySelectorAll('svg.vchart'));
+  function money(x){ var s = Math.round(Math.abs(x)).toLocaleString('en-US'); return (x < -0.5 ? '-$' : '$') + s; }
+  function show(i, fromSlider){
+    i = Math.max(0, Math.min(D.a.length - 1, i));
+    var a = D.a[i], v = D.v[i];
+    ra.textContent = a.toFixed(2); rv.textContent = money(v); rd.textContent = money(D.d[i]);
+    if(!fromSlider) slider.value = a;
+    slider.setAttribute('aria-valuetext', 'A ' + a.toFixed(2) + ' million, VaR ' + money(v));
+    charts.forEach(function(s){
+      var ml = +s.dataset.ml, pw = +s.dataset.pw, mt = +s.dataset.mt, ph = +s.dataset.ph, ymax = +s.dataset.ymax;
+      var x = ml + (a + 10) / 20 * pw, y = mt + (1 - v / ymax) * ph;
+      var c = s.querySelector('.cross'), p = s.querySelector('.dot');
+      c.setAttribute('x1', x); c.setAttribute('x2', x); p.setAttribute('cx', x); p.setAttribute('cy', y);
+    });
+  }
+  function index(s, e){
+    var pt = s.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    var q = pt.matrixTransform(s.getScreenCTM().inverse());
+    return Math.round(((q.x - (+s.dataset.ml)) / (+s.dataset.pw) * 20) / 0.25);
+  }
+  charts.forEach(function(s){
+    var hit = s.querySelector('.hit');
+    hit.addEventListener('pointermove', function(e){ show(index(s, e)); });
+    hit.addEventListener('pointerdown', function(e){ show(index(s, e)); });
+  });
+  slider.addEventListener('input', function(){ show(Math.round((parseFloat(slider.value) + 10) / 0.25), true); });
+  show(D.i);
+})();
+</script>
+</body>
+</html>

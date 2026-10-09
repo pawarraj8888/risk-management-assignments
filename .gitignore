@@ -1,0 +1,6 @@
+.DS_Store
+~$*.xlsx
+~$*.docx
+*.tmp
+.ruff_cache/
+__pycache__/

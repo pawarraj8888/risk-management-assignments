@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Risk Management Assignments - FRE-GY 6123</title>
+<meta name="description" content="Homework for FRE-GY 6123 Financial Risk Management at NYU Tandon: Treasury yield shocks, PV01 hedging and historical-simulation VaR.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e3a5f'/%3E%3Cpath d='M6 9 L14 22 L17 22 L26 8' fill='none' stroke='%232a78d6' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Crimson+Pro:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f8fafc; --card:#ffffff; --fg:#0f172a; --fg-2:#475569; --muted:#e9eef5; --border:#cbd5e1;
+  --primary:#1e3a5f; --accent:#b45309; --ring:#1e3a5f;
+   --serif:"Crimson Pro",Georgia,"Times New Roman",serif;
+  --sans:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#0d0d0d; --card:#1a1a19; --fg:#ffffff; --fg-2:#c3c2b7; --muted:#242423; --border:#383835;
+    --primary:#9ec5f4; --accent:#f0b26b; --ring:#9ec5f4;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--primary);text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{color:var(--accent)}
+:focus-visible{outline:3px solid var(--ring);outline-offset:2px;border-radius:4px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--card);padding:8px 12px;border:1px solid var(--border)}
+.skip:focus{left:16px}
+.wrap{max-width:960px;margin:0 auto;padding:clamp(28px,6vw,64px) clamp(16px,4vw,40px)}
+.eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-2);font-weight:700}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(34px,5vw,54px);line-height:1.08;margin:10px 0 14px;color:var(--primary)}
+.lede{font-size:19px;max-width:760px;margin:0 0 28px}
+.cards{display:grid;gap:16px;list-style:none;padding:0;margin:0}
+.card{display:block;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;text-decoration:none;color:var(--fg);transition:border-color .2s,transform .2s}
+.card:hover{border-color:var(--primary);color:var(--fg);transform:translateY(-1px)}
+@media (prefers-reduced-motion: reduce){.card{transition:none}.card:hover{transform:none}}
+.card .n{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fg-2)}
+.card h2{font-family:var(--serif);font-weight:600;font-size:26px;margin:4px 0 6px;color:var(--primary)}
+.card p{margin:0 0 8px;color:var(--fg)}
+.card .who{font-size:14px;color:var(--fg-2);margin:0}
+.card .go{display:inline-block;margin-top:10px;font-weight:700;color:var(--primary)}
+.small{font-size:14px;color:var(--fg-2);margin-top:28px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main" class="wrap">
+  <div class="eyebrow">NYU Tandon · FRE-GY 6123 Financial Risk Management · Fall 2026</div>
+  <h1>Risk Management Assignments</h1>
+  <p class="lede">Homework for the financial risk management course. Each assignment has its Excel workbook, the written
+    answers and a page that shows the results in the browser.</p>
+  <ul class="cards">
+    <li><a class="card" href="homework-1/">
+      <div class="n">Homework 1</div>
+      <h2>Treasury Yield Shocks, PV01 Hedges and VaR</h2>
+      <p>Two years of daily 2-year and 10-year Treasury yield changes: how far they are from normal, how the two yields move
+        together, PV01-neutral hedges, and a 99% 1-day VaR from historical simulation with second-order repricing.</p>
+      <p class="who">Rajvardhan Pawar</p>
+      <span class="go">Open the page</span>
+    </a></li>
+  </ul>
+  <p class="small">Files: <a href="https://github.com/pawarraj8888/risk-management-assignments">github.com/pawarraj8888/risk-management-assignments</a></p>
+</main>
+</body>
+</html>
