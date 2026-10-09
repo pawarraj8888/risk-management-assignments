@@ -37,7 +37,7 @@ a:hover{color:var(--accent)}
 .skip:focus{left:16px}
 .wrap{max-width:1040px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
 header.site{border-bottom:1px solid var(--border);background:var(--card)}
-.top{display:flex;justify-content:space-between;align-items:center;gap:8px 16px;padding:10px 0;flex-wrap:wrap}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px 16px;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
 .brand{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--primary)}
 nav.main{display:flex;gap:0 14px;flex-wrap:wrap;font-size:14.5px}
 nav.main a{display:inline-flex;align-items:center;min-height:44px;text-decoration:none;color:var(--fg-2);padding:0 2px}
@@ -68,6 +68,7 @@ thead th{color:var(--fg-2);font-weight:700;font-size:13px;letter-spacing:.02em;w
 thead th:first-child{text-align:left}
 tbody tr:hover{background:var(--muted)}
 .tscroll{overflow-x:auto;margin:0 0 18px;max-width:880px}
+@media (max-width:600px){.tscroll.wide::after{content:"Swipe the table sideways to see every column.";display:block;font-size:13px;color:var(--fg-2);padding:6px 0 2px}}
 .scroll{max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:8px;margin-top:10px}
 .scroll thead th{position:sticky;top:0;background:var(--card);z-index:1}
 .scroll caption{padding:10px 10px 8px}
@@ -147,7 +148,7 @@ footer{border-top:1px solid var(--border);padding:26px 0 40px;color:var(--fg-2);
 <section id="q1">
 <h2>Question 1</h2>
 <p class="sub">For each shock series, what percent of the daily changes are within 1 standard deviation of the mean change, and within 2?</p>
-<div class="tscroll" tabindex="0" role="region" aria-label="Share of daily changes within 1 and 2 SD of the mean (table, scroll sideways if needed)"><table><caption>Share of daily changes within 1 and 2 SD of the mean</caption><thead><tr><th scope="col"><span class=sr>Row</span></th><th scope="col">Mean (bp)</th><th scope="col">SD (bp)</th><th scope="col">Days within 1 SD</th><th scope="col">% within 1 SD</th><th scope="col">Days within 2 SD</th><th scope="col">% within 2 SD</th></tr></thead><tbody><tr><th scope="row">2-year shocks</th><td>0.25</td><td>4.88</td><td>385 of 521</td><td>73.90%</td><td>496 of 521</td><td>95.20%</td></tr><tr><th scope="row">10-year shocks</th><td>0.30</td><td>4.85</td><td>379 of 521</td><td>72.74%</td><td>491 of 521</td><td>94.24%</td></tr><tr><th scope="row">Normal distribution</th><td></td><td></td><td></td><td>68.27%</td><td></td><td>95.45%</td></tr></tbody></table></div>
+<div class="tscroll wide" tabindex="0" role="region" aria-label="Share of daily changes within 1 and 2 SD of the mean (table, scroll sideways if needed)"><table><caption>Share of daily changes within 1 and 2 SD of the mean</caption><thead><tr><th scope="col"><span class=sr>Row</span></th><th scope="col">Mean (bp)</th><th scope="col">SD (bp)</th><th scope="col">Days within 1 SD</th><th scope="col">% within 1 SD</th><th scope="col">Days within 2 SD</th><th scope="col">% within 2 SD</th></tr></thead><tbody><tr><th scope="row">2-year shocks</th><td>0.25</td><td>4.88</td><td>385 of 521</td><td>73.90%</td><td>496 of 521</td><td>95.20%</td></tr><tr><th scope="row">10-year shocks</th><td>0.30</td><td>4.85</td><td>379 of 521</td><td>72.74%</td><td>491 of 521</td><td>94.24%</td></tr><tr><th scope="row">Normal distribution</th><td></td><td></td><td></td><td>68.27%</td><td></td><td>95.45%</td></tr></tbody></table></div>
 <p class="prose"><strong>2-year: </strong>73.90% of the daily changes are within 1 SD of the mean and 95.20% are within 2 SD. <strong>10-year: </strong>72.74% are within 1 SD and 94.24% are within 2 SD.</p>
 <p class="prose">If the changes were normal I would expect 68.27% and 95.45%. Both series have more days close to the mean than a normal distribution and slightly fewer inside 2 SD, so they are more peaked in the middle with somewhat fatter tails. This is strongest for the 2-year: its excess kurtosis is 2.88 against 0.67 for the 10-year. Most days are quiet, and then there are a few very large moves (the biggest 2-year changes are -27.4 bp and +21.8 bp, both more than 4 SD). 5 of the 2-year changes are more than 3 SD from the mean, where a normal distribution would give about 1.4. This matters later because a VaR based on the normal distribution would understate the tail.</p>
 </section>
