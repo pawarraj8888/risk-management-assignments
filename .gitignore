@@ -1,6 +1,5 @@
 .DS_Store
-~$*.xlsx
-~$*.docx
+._*
+~$*
+Thumbs.db
 *.tmp
-.ruff_cache/
-__pycache__/

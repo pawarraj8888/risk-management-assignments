@@ -33,4 +33,4 @@ Blue numbers in the workbook are typed inputs and everything else is a formula.
 | 8 | Lowest VaR at A = -2.75 ($19,533), not at zero PV01, which is A = -3.816 ($20,106) |
 
 VaR is by historical simulation: each of the 521 historical pairs of yield changes is applied to today's
-position, both legs are repriced with the second-order formula, and the VaR is the 1st percentile of the P&L.
+position, both legs are repriced with the second-order formula, and the VaR is minus the 1st percentile of the P&L, shown as a positive loss.
